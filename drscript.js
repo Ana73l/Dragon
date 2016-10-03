@@ -29,7 +29,7 @@ var newGame = () => {
   score += 1
   if(score % 100 ==0 )
     generateInvader()
-  if(score % 2000 == 1)
+  if(score % 1000 == 1)
     level++
   for(var i = 0; i < components.length; i++) {
     if(components[i].compType == 'projectile') {
