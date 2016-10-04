@@ -10,26 +10,30 @@ var command = "end"
 var causeOfDeath1 = "Commands: Up-arrow: Up, Down-Arrow: Down,"
 var causeOfDeath2 = "Spacebar: start/shoot. Pess spacebar to start."
 var causeOfDeath3 = ""
-
+var music
+var isMusic = false
 
 var startGame = () => {
   canvas = document.getElementById("gameCanvas")
   cw = canvas.width
   ch = canvas.height
   ctx = canvas.getContext("2d")
-  window.addEventListener('keydown',dragonMove, true)
-  window.addEventListener('keyup', dragonClearMove, true)
+  window.addEventListener('keydown',keyboardControls, true)
+  window.addEventListener('keyup', removeKeyControls, true)
   setInterval(updateArea, 20)
+  music = new Audio("menuMusic.mp3");
 }
 
 var clear = () => ctx.clearRect(0,0,cw,ch)
 
 var newGame = () => {
+  music.pause()
+  isMusic = false
   clear()
   score += 1
   if(score % 100 ==0 )
     generateInvader()
-  if(score % 750 == 1)
+  if(score % 1000 == 1)
     level++
   for(var i = 0; i < components.length; i++) {
     if(components[i].compType == 'projectile') {
@@ -48,8 +52,9 @@ var newGame = () => {
         causeOfDeath1 = "Your kingdom has suffered too many casualties!"
         causeOfDeath2 = "Press spacebar to try again."
         causeOfDeath3 = "Your score: " + score
+        var audio = new Audio("dragonDeath.mp3");
+        audio.play()
         command = "end"
-        endGame()
         break
       }
       components[i].update()
@@ -63,6 +68,11 @@ var newGame = () => {
 }
 
 var endGame = () => {
+  if(!isMusic) {
+    music.load();
+    music.play();
+    isMusic = true
+  }
   clear()
   components.splice(6,components.length-6)
   components[3].width = 200
@@ -78,6 +88,7 @@ var endGame = () => {
   score = 0
   level = 0
   health = 5
+
 }
 
 var updateArea = () => {
@@ -134,6 +145,8 @@ class Component {
   shoot() {
     new Component((this.x + this.width/2 - 60),(this.y + this.height/2 - 15),"fireball.png",30,30,"image","projectile")
     components[components.length-1].dirX = -5
+    var audio = new Audio("fireBreath.mp3");
+    audio.play()
   }
 }
 
@@ -179,25 +192,27 @@ class Announcement {
     this.text3 = causeOfDeath3
   }
 }
-var background = new Component(0,0,"background.png",1024,768,"image")
-//var background = new Component(0,0,"#FFFFFF",1024,768,"color")
-var topRect = new Component(0,0,"#000000",1024,50,"color")
-var maxHealth = new Component(800,7,"#FF0000",200,30,"color")
-var currHealth = new Component(800,7,"green",200,30,"color")
-var dragon = new Component(1024 - 250,768/2-75, "theDragon.png", 250, 150, "image")
-var theScore = new gameScore()
+var background = new Component(0,0,"background.png",1024,768,"image");
+//var background = new Component(0,0,"#FFFFFF",1024,768,"color");
+var topRect = new Component(0,0,"#000000",1024,50,"color");
+var maxHealth = new Component(800,7,"#FF0000",200,30,"color");
+var currHealth = new Component(800,7,"green",200,30,"color");
+var dragon = new Component(1024 - 250,768/2-75, "theDragon.png", 250, 150, "image");
+var theScore = new gameScore();
 
 var projectileHit = (i,j) => {
   if(components[i].x <= components[j].x + components[j].width  &&
     ((((components[i].y >= components[j].y) && (components[i].y + components[i].height <= components[j].y + components[j].height))) ||
       ((components[i].y <= components[j].y) && (components[i].y + components[i].height >= components[j].y)) ||
         ((components[i].y <= components[j].y + components[j].height) && (components[i].y + components[i].height >= components[j].y + components[j].height)))) {
-    components[i].exists = false
-    components[j].exists = false
+    components[i].exists = false;
+    components[j].exists = false;
+    var audio = new Audio("gargoyleDeath.mp3");
+    audio.play();
   }
 }
 
-var dragonMove = (e) => {
+var keyboardControls = (e) => {
   if(e.keyCode == 38)
     dragon.dirY = -6
   if(e.keyCode == 40)
@@ -219,19 +234,19 @@ var invActions = () => {
           ((components[i].y >= dragon.y && components[i].y + components[i].height <= dragon.y + dragon.height) ||
           ((components[i].y <= dragon.y) && (components[i].y + components[i].height >= dragon.y + 30)) ||
             ((components[i].y +20 <= dragon.y + dragon.height) && (components[i].y + components[i].height >= dragon.y + dragon.height)))) {
-          health --
-          currHealth.width = (health * 2 / 10) * maxHealth.width
-          components[i].exists = false
+          health --;
+          currHealth.width = (health * 2 / 10) * maxHealth.width;
+          components[i].exists = false;
         }
         else if(components[i].x >= cw) {
           health --
           currHealth.width = (health * 2 / 10) * maxHealth.width
-          components[i].exists = false
+          components[i].exists = false;
         }
       }
       if(components[i].compType == 'projectile')
         if(components[i].x + components[i].width <= 0)
-          components[i].exists = false
+          components[i].exists = false;
     }
 }
 
@@ -240,4 +255,4 @@ var generateInvader = () => {
   components[components.length-1].dirX = 3
 }
 
-var dragonClearMove = () => dragon.clearMove()
+var removeKeyControls = () => dragon.clearMove()
